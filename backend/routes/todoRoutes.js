@@ -39,34 +39,21 @@ router.delete('/:user/:todoId', async (req, res) => {
   }
 });
 
-// Route to update a todo's task or completion status for a user
+// Route to update a todo's completion status for a user (this is your PATCH route)
 router.patch('/:user/:todoId', async (req, res) => {
-  const { task, completed } = req.body;  // Extract task and completed from the body
-
   try {
-    // Find the todo by its ID
-    const todo = await Todo.findById(req.params.todoId);
-    
-    if (!todo) {
-      return res.status(404).send('Todo not found');
-    }
+    // Find the todo by its ID and update the completion status
+    const updatedTodo = await Todo.findByIdAndUpdate(
+      req.params.todoId,
+      { completed: req.body.completed }, // Update the completed field
+      { new: true } // Return the updated document
+    );
 
-    // If task is provided, update the task name
-    if (task) todo.task = task;
-
-    // If completed is provided, update the completion status
-    if (completed !== undefined) todo.completed = completed;
-
-    // Save the updated todo item
-    await todo.save();
-
-    // Find all todos for the user and return them
-    const todos = await Todo.find({ user: req.params.user });
-    res.json(todos);  // Return all the todos of the user, including the updated one
+    // Respond with the updated todo
+    res.json(updatedTodo);
   } catch (error) {
     res.status(500).send('Error updating todo');
   }
 });
-
 
 module.exports = router;
